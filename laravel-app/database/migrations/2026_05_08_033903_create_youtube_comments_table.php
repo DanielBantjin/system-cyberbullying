@@ -1,0 +1,39 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration {
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        Schema::create('youtube_comments', function (Blueprint $table) {
+
+            $table->id();
+
+            $table->foreignId('youtube_analysis_id')
+                ->constrained()
+                ->onDelete('cascade');
+
+            $table->text('comment');
+
+            $table->string('category');
+
+            $table->float('confidence');
+
+            $table->timestamps();
+
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::dropIfExists('youtube_comments');
+    }
+};

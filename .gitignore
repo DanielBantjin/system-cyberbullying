@@ -1,0 +1,40 @@
+# =========================
+# LARAVEL
+# =========================
+
+laravel-app/vendor/
+laravel-app/node_modules/
+laravel-app/.env
+
+# =========================
+# FASTAPI
+# =========================
+
+fastapi-ml/venv/
+fastapi-ml/__pycache__/
+
+# =========================
+# MODEL AI
+# =========================
+
+fastapi-ml/final_model/
+
+# =========================
+# PYTHON
+# =========================
+
+*.pyc
+
+# =========================
+# OS
+# =========================
+
+.DS_Store
+Thumbs.db
+
+fastapi-ml/indobert_model/
+
+*.safetensors
+*.pth
+*.pt
+*.bin

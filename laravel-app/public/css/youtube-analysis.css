@@ -1,0 +1,94 @@
+body{
+    background:#0f172a;
+    color:white;
+    font-family:Segoe UI;
+}
+
+.container{
+    max-width:1400px;
+    margin:auto;
+    padding:30px;
+}
+
+.card,
+.result-card,
+.table-card{
+    background:#1e293b;
+    border-radius:20px;
+    padding:25px;
+    margin-bottom:25px;
+}
+
+.stats{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:15px;
+}
+
+.stat-card{
+    background:#0f172a;
+    padding:20px;
+    border-radius:15px;
+}
+
+.stat-title{
+    font-size:14px;
+    opacity:.8;
+}
+
+.stat-value{
+    font-size:28px;
+    font-weight:bold;
+    margin-top:10px;
+}
+
+.red{color:#ef4444;}
+.green{color:#22c55e;}
+.orange{color:#fb923c;}
+.warning{color:#facc15;}
+.purple{color:#a855f7;}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+}
+
+th,
+td{
+    padding:14px;
+    border-bottom:1px solid #334155;
+    text-align:left;
+}
+
+.label-bullying{
+    background:rgba(239,68,68,.2);
+    color:#ef4444;
+    padding:6px 12px;
+    border-radius:999px;
+}
+
+.label-normal{
+    background:rgba(34,197,94,.2);
+    color:#22c55e;
+    padding:6px 12px;
+    border-radius:999px;
+}
+
+.label-invalid{
+    background:rgba(251,146,60,.2);
+    color:#fb923c;
+    padding:6px 12px;
+    border-radius:999px;
+}
+
+.label-review{
+    background:rgba(250,204,21,.2);
+    color:#facc15;
+    padding:6px 12px;
+    border-radius:999px;
+}
+
+.label-valid{
+    color:#22c55e;
+    font-weight:bold;
+}
