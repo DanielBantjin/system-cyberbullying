@@ -8,12 +8,18 @@
 
     <div class="bg-white rounded-3xl border border-slate-200 shadow-sm p-10">
 
-        <h1 class="text-3xl font-bold text-slate-800">
+        <h1
+            id="pageTitle"
+            class="text-3xl font-bold text-slate-800">
+
             Analisis Sedang Berjalan
+
         </h1>
 
         <p class="text-slate-500 mt-3">
+
             Sistem sedang mengambil dan menganalisis komentar YouTube.
+
         </p>
 
         <div class="mt-10">
@@ -21,7 +27,9 @@
             <div class="flex justify-between mb-2">
 
                 <span class="text-slate-600 font-medium">
+
                     Progress
+
                 </span>
 
                 <span
@@ -41,6 +49,7 @@
                     id="progressBar"
                     class="bg-blue-600 h-5 rounded-full transition-all duration-500"
                     style="width:0%">
+
                 </div>
 
             </div>
@@ -81,27 +90,20 @@ function updateProgress()
     .then(response => response.json())
     .then(data => {
 
-        let progress =
-            data.progress || 0;
+        let progress = data.progress || 0;
 
         document
-            .getElementById(
-                'progressBar'
-            )
+            .getElementById('progressBar')
             .style.width =
             progress + '%';
 
         document
-            .getElementById(
-                'progressText'
-            )
+            .getElementById('progressText')
             .innerHTML =
             progress + '%';
 
         document
-            .getElementById(
-                'statusText'
-            )
+            .getElementById('statusText')
             .innerHTML =
             data.status || '';
 
@@ -121,6 +123,10 @@ function updateProgress()
                 ' komentar';
         }
 
+        // =====================================
+        // ANALISIS SELESAI
+        // =====================================
+
         if (
             data.status === 'completed'
         ) {
@@ -132,20 +138,81 @@ function updateProgress()
             return;
         }
 
+        // =====================================
+        // ERROR
+        // =====================================
+
         if (
             data.status === 'error'
         ) {
 
             document
                 .getElementById(
+                    'pageTitle'
+                )
+                .innerHTML =
+                'Analisis Gagal';
+
+            document
+                .getElementById(
+                    'progressBar'
+                )
+                .classList
+                .remove(
+                    'bg-blue-600'
+                );
+
+            document
+                .getElementById(
+                    'progressBar'
+                )
+                .classList
+                .add(
+                    'bg-red-500'
+                );
+
+            document
+                .getElementById(
+                    'progressText'
+                )
+                .innerHTML =
+                'Gagal';
+
+            document
+                .getElementById(
                     'statusText'
                 )
                 .innerHTML =
-                'Terjadi kesalahan: ' +
-                (data.message || '');
+                '<span class="text-red-600 font-semibold">' +
+                (data.message ||
+                'Terjadi kesalahan') +
+                '</span>';
+
+            document
+                .getElementById(
+                    'processedText'
+                )
+                .innerHTML =
+                'Proses analisis dihentikan.';
+
+            setTimeout(() => {
+
+                alert(
+                    data.message ||
+                    'Terjadi kesalahan saat analisis.'
+                );
+
+                window.location.href =
+                    "/analysis";
+
+            }, 500);
 
             return;
         }
+
+        // =====================================
+        // LANJUT POLLING
+        // =====================================
 
         setTimeout(
             updateProgress,
@@ -155,10 +222,30 @@ function updateProgress()
     })
     .catch(() => {
 
-        setTimeout(
-            updateProgress,
-            3000
-        );
+        document
+            .getElementById(
+                'pageTitle'
+            )
+            .innerHTML =
+            'Koneksi Gagal';
+
+        document
+            .getElementById(
+                'statusText'
+            )
+            .innerHTML =
+            '<span class="text-red-600 font-semibold">Tidak dapat terhubung ke server FastAPI.</span>';
+
+        setTimeout(() => {
+
+            alert(
+                'Tidak dapat terhubung ke server FastAPI.'
+            );
+
+            window.location.href =
+                "/analysis";
+
+        }, 500);
 
     });
 }

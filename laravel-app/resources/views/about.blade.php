@@ -138,7 +138,7 @@
                     <p><strong>NIM :</strong> 223303030288</p>
                     <p><strong>TTL :</strong> Medan, 13 September 2003</p>
                     <p><strong>Email :</strong> danielseptianveribancin@gmail.com</p>
-                    <p><strong>Universitas :</strong> Universitas Prima Indonesia</p>
+                    <p><strong>Fakultas :</strong> Universitas Prima Indonesi</p>
 
                 </div>
 

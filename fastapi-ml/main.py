@@ -3,12 +3,10 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import os
 from transformers import AutoTokenizer, AutoModelForSequenceClassification
-
+from langdetect import detect
 from youtube_comment_downloader import YoutubeCommentDownloader
-
 import torch
 import torch.nn.functional as F
-
 import uuid
 import json
 import time
@@ -47,7 +45,7 @@ JOB_DIR.mkdir(exist_ok=True)
 # MODEL
 # ==================================================
 
-MODEL_PATH = "./indobert_model"
+MODEL_PATH = "./indobert_modelC"
 
 print("Loading tokenizer...")
 print("Folder ada :", os.path.exists(MODEL_PATH))
@@ -204,7 +202,27 @@ def preprocess_text(text):
 
     return text.strip()
 
+def is_indonesian(text):
 
+    try:
+        return detect(text) == "id"
+    except:
+        return False
+    
+
+def is_noise(text):
+
+    text = text.strip()
+
+    # hanya simbol
+    if re.fullmatch(r'[\W_]+', text):
+        return True
+
+    # terlalu pendek
+    if len(text.strip()) < 3:
+        return True
+
+    return False
 # ==================================================
 # HOME
 # ==================================================
@@ -248,6 +266,7 @@ def predict_batch(texts):
         probs = prob.tolist()
 
         predicted_class = torch.argmax(prob).item()
+        text = processed_texts[i]
 
         confidence = probs[predicted_class] * 100
 
@@ -256,12 +275,6 @@ def predict_batch(texts):
         gap = (sorted_probs[0] - sorted_probs[1]) * 100
 
         need_review = False
-
-        if confidence < 75:
-            need_review = True
-
-        if gap < 15:
-            need_review = True
 
         results.append(
             {
@@ -285,7 +298,9 @@ def predict_batch(texts):
 @app.post("/predict-text")
 def predict_single_text(req: TextRequest):
 
-    return predict_text(req.text)
+    result = predict_batch([req.text])
+
+    return result[0]
 
 
 # ==================================================
@@ -294,7 +309,11 @@ def predict_single_text(req: TextRequest):
 
 
 def process_youtube_job(job_id: str, url: str):
-
+    print("\n" + "="*60)
+    print("PROSES ANALISIS DIMULAI")
+    print("Job ID :", job_id)
+    print("URL    :", url)
+    print("="*60)
     try:
         start_time = time.time()
 
@@ -323,13 +342,88 @@ def process_youtube_job(job_id: str, url: str):
 
             all_comments.append(text)
 
+
+        total_comments = len(all_comments)
+
+        print("\n" + "="*60)
+        print("SCRAPING KOMENTAR SELESAI")
+        print("Total komentar :", total_comments)
+        print("="*60)
+
+# ==========================================
+# Filter Komentar Indonesia
+# ==========================================
+
+        total_comments = len(all_comments)
+
+        if total_comments == 0:
+
+            update_job(
+                job_id,
+                {
+                    "status": "error",
+                    "progress": 0,
+                    "message": "Tidak ditemukan komentar yang dapat dianalisis."
+                }
+            )
+
+            return
+
+        indonesian_comments = []
+
+        for text in all_comments:
+
+            try:
+
+                if is_indonesian(text):
+                    indonesian_comments.append(text)
+
+            except:
+                pass
+
+        # Tidak ada komentar Indonesia
+
+        if len(indonesian_comments) == 0:
+
+            update_job(
+                job_id,
+                {
+                    "status": "error",
+                    "progress": 0,
+                    "message": "Konten tidak mengandung komentar berbahasa Indonesia sehingga analisis tidak dapat dilakukan."
+                }
+            )
+
+            return
+
+        ratio = len(indonesian_comments) / total_comments
+
+        # Kebanyakan bukan Indonesia
+
+        if ratio < 0.20:
+
+            update_job(
+                job_id,
+                {
+                    "status": "error",
+                    "progress": 0,
+                    "message": "Mayoritas komentar bukan berbahasa Indonesia sehingga analisis tidak dapat dilakukan."
+                }
+            )
+
+            return
+
+        # komentar Indonesia
+
+        all_comments = indonesian_comments
+
         total_comments = len(all_comments)
         print("=" * 50)
         print(f"TOTAL KOMENTAR DIAMBIL: {total_comments}")
         print("=" * 50)
-
+        
         print(f"[{job_id}] " f"Comments: " f"{total_comments}")
-
+        
         if total_comments == 0:
             update_job(
                 job_id,
@@ -419,6 +513,16 @@ def process_youtube_job(job_id: str, url: str):
 
         bullying_percentage = round((bullying_count / total_comments) * 100, 2)
         analysis_time = round(time.time() - start_time, 2)
+        print("\n" + "=" * 60)
+        print("HASIL ANALISIS")
+        print("Job ID        :", job_id)
+        print("Total         :", total_comments)
+        print("Cyberbullying :", bullying_count)
+        print("Non-Bullying  :", non_bullying_count)
+        print("Undefined     :", invalid_count)
+        print("Persentase CB :", bullying_percentage, "%")
+        print("Waktu         :", analysis_time, "detik")
+        print("=" * 60)
         update_job(
             job_id,
             {
@@ -438,6 +542,7 @@ def process_youtube_job(job_id: str, url: str):
 
         print(f"[{job_id}] COMPLETE")
 
+
     except Exception as e:
 
         print(f"[{job_id}] ERROR:", e)
@@ -451,24 +556,40 @@ def process_youtube_job(job_id: str, url: str):
 
 
 @app.post("/predict-youtube")
-def predict_youtube(req: YoutubeRequest, background_tasks: BackgroundTasks):
+def predict_youtube(
+    req: YoutubeRequest,
+    background_tasks: BackgroundTasks
+):
 
-    cleanup_old_jobs()
+    url = req.url
 
-    url = req.url.strip()
-
-    if not url:
-
-        return {"error": "URL tidak boleh kosong"}
+    print("\n" + "="*60)
+    print("REST API REQUEST DITERIMA")
+    print("Endpoint : /predict-youtube")
+    print("Method   : POST")
+    print("URL      :", url)
+    print("="*60)
 
     job_id = str(uuid.uuid4())
 
-    save_job(job_id, {"status": "queued", "progress": 0})
+    save_job(
+        job_id,
+        {
+            "status": "queued",
+            "progress": 0
+        }
+    )
 
-    background_tasks.add_task(process_youtube_job, job_id, url)
+    background_tasks.add_task(
+        process_youtube_job,
+        job_id,
+        url
+    )
 
-    return {"job_id": job_id, "status": "started"}
-
+    return {
+        "job_id": job_id,
+        "status": "started"
+    }
 
 # ==================================================
 # GET PROGRESS

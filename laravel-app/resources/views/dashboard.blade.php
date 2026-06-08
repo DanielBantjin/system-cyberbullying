@@ -48,10 +48,14 @@
 
                 <p class="mt-5 text-slate-600 leading-8">
 
-                    Sistem Deteksi Cyberbullying pada Komentar YouTube dikembangkan untuk mengidentifikasi komentar yang
-                    mengandung unsur cyberbullying menggunakan model IndoBERT. Sistem melakukan analisis terhadap komentar
-                    berbahasa Indonesia dan menyajikan hasil klasifikasi beserta statistik analisis sebagai bentuk dukungan
-                    dalam menciptakan lingkungan digital yang lebih aman dan sehat.
+                    Sistem Deteksi Cyberbullying pada Komentar YouTube merupakan aplikasi berbasis web yang memanfaatkan
+                    model IndoBERT untuk mendeteksi dan mengklasifikasikan komentar berbahasa Indonesia pada platform
+                    YouTube. Sistem dapat menganalisis komentar secara otomatis dengan mengelompokkannya ke dalam kategori
+                    Cyberbullying, Non-Cyberbullying, dan Tidak Valid. Selain menampilkan hasil klasifikasi setiap komentar,
+                    sistem juga menyediakan visualisasi statistik dan ringkasan hasil analisis untuk membantu pengguna
+                    memahami tingkat penyebaran cyberbullying pada suatu video. Dengan adanya sistem ini, diharapkan proses
+                    pemantauan konten dan identifikasi perilaku cyberbullying di media sosial dapat dilakukan secara lebih
+                    cepat, efektif, dan akurat.
 
 
                 </p>
